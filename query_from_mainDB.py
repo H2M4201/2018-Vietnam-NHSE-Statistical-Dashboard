@@ -1,17 +1,12 @@
 import pymysql
 import json
-from decimal import Decimal
-import pandas as pd
 import numpy as np
-import pytest
+import os
+from dotenv import load_dotenv, find_dotenv
 
-
+load_dotenv(find_dotenv())
 # MySQL connection details
-MYSQL_HOST = 'localhost'
-MYSQL_USER = 'root'
-MYSQL_PASSWORD = '123456'
-MYSQL_DB = 'thpt'
-MYSQL_PORT = 3306
+
 
 # get province code
 with open('./caching/province.json', 'r', encoding='utf-8') as json_file:
@@ -27,11 +22,10 @@ score_distribution_cache = './caching/score_distribution_stat.json'
 def connect_to_sql():
     # Connect to MySQL
     connection = pymysql.connect(
-        host=MYSQL_HOST,
-        user=MYSQL_USER,
-        password=MYSQL_PASSWORD,
-        database=MYSQL_DB,
-        port=MYSQL_PORT
+        host = os.environ.get("MYSQL_HOST"),
+        user = os.environ.get("MYSQL_USER"),
+        passwd = os.environ.get("MYSQL_PASSWORD"),
+        db = os.environ.get("MYSQL_DATABASE")
     )
 
     return connection
@@ -43,6 +37,7 @@ def execute_query(conn, query):
 
     return cursor.fetchall()
 
+#----------------------------------------------
 # done debugging and cleaning
 def get_actual_student_distribution():
     conn = connect_to_sql()

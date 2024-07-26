@@ -1,10 +1,5 @@
-# Ignore everything
-*
+# ignore csv file
+*.csv
 
-# Do not ignore the .gitignore file itself
-!.gitignore
-
-# Do not ignore specific files
-!caching/
-!query_from_mainDB.py
-!dashboard.py
+__pycache__/
+.pytest_cache/
