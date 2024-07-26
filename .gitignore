@@ -1,0 +1,10 @@
+# Ignore everything
+*
+
+# Do not ignore the .gitignore file itself
+!.gitignore
+
+# Do not ignore specific files
+!caching/
+!query_from_mainDB.py
+!dashboard.py
