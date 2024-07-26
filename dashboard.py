@@ -75,7 +75,7 @@ def create_donut_chart(province_code):
         margin=dict(t=0, b=0, l=0, r=0),
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='#d0d0e1',
-        height=200
+        height=180
     )
 
     fig.update_traces(
@@ -85,7 +85,6 @@ def create_donut_chart(province_code):
     return fig
 
 def create_bar_chart(province_score_distribution, subject):
-    province_code = province_score_distribution['province_code']
     categories = province_score_distribution[subject]['score']
     values = province_score_distribution[subject]['count']
 
@@ -96,10 +95,32 @@ def create_bar_chart(province_score_distribution, subject):
 
     # Customize the layout
     fig.update_layout(
-        title='Phổ điểm môn ' + name_conversion[subject] + ' ' + \
-            provinces[province_code],
+        title={
+            'text': 'Phổ điểm môn ' + name_conversion[subject] + ' ',
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        },
         xaxis_title='Điểm số',
-        yaxis_title='Số lượng thí sinh'
+        yaxis_title='Số lượng thí sinh',
+        font=dict(
+            family="Arial",
+            size=14,
+            color="Black"
+        ),
+        title_font=dict(
+            size=20
+        ),
+        margin=dict(
+            l=20,  # Adjust left margin
+            r=20,  # Adjust right margin
+            t=60,  # Adjust top margin
+            b=20   # Adjust bottom margin
+        ),
+        width=440,  # Adjust width
+        height=400,  # Adjust height
+        paper_bgcolor="#d0d0e1",  # Match the background color of the gray box
+        plot_bgcolor="#f2f2f2",
     )
 
     return fig
@@ -246,7 +267,7 @@ app.layout = html.Div([
         html.Div([
             html.H2("Tỷ lệ tham dự".upper(), style=attendant_title_layout),
             html.H3(id="participation_percentage", 
-                    children=find_attendant_stat_by_province('00')['participation_percentage'], 
+                    children=str(find_attendant_stat_by_province('00')['participation_percentage']) + '%', 
                     style={**attendant_key_index_layout, 'margin-top': '50px'}),
         ], style=attendant_stat_layout),
 
@@ -278,7 +299,7 @@ app.layout = html.Div([
 
     # Score distribution by subject
     html.Div([
-        html.Div(create_score_distribution_figures('00'), \
+        html.Div(id='bar-charts-container', children= create_score_distribution_figures('00'),\
                  style={'display': 'flex', 'flex-wrap': 'wrap', 'justify-content': 'center'}),
     ], style={}), 
 
@@ -287,7 +308,7 @@ app.layout = html.Div([
         interval=1*40000000,  # in milliseconds
         n_intervals=0
     )
-], style={'background-color': '#2c3e50', 'padding': '10px'})
+], style={'background-color': "#2c3e50", 'padding': '10px'})
 
 # ________________________________________________________
 #                                                         |
@@ -295,7 +316,7 @@ app.layout = html.Div([
 # ________________________________________________________|
 
 
-# update province
+# update province: done debugging
 @app.callback(
     Output('province-name', 'children'),
     Input('submit-button', 'n_clicks'),
@@ -315,8 +336,8 @@ def update_province_name(n_clicks, selected_province):
         Output('expect_attendants', 'children'),
         Output('actual_attendants', 'children'),
         Output('participation_percentage', 'children'),
-        Output('participation-category', 'figure')
-        
+        Output('participation-category', 'figure'),
+        Output('bar-charts-container', 'children')
     ],
     Input('submit-button', 'n_clicks'),
     State('select-province', 'value')
@@ -327,8 +348,10 @@ def update_attendant_stat_by_province(n_clicks, selected_province):
     actual_attendants = update_actual_participation_by_province(n_clicks, selected_province)
     attendant_percentage = update_participation_percentage_by_province(n_clicks, selected_province)
     attendant_category = update_participation_category(n_clicks, selected_province)
+    score_distribution = create_score_distribution_figures(selected_province)
     
-    return expected_attendants, actual_attendants, attendant_percentage, attendant_category
+    return expected_attendants, actual_attendants, attendant_percentage, \
+        attendant_category, score_distribution
 
 
 # update expected participants
