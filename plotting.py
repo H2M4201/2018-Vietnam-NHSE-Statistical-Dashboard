@@ -37,6 +37,7 @@ def create_donut_chart(province_code):
     
     return fig
 
+# function to create bar chart
 def create_bar_chart(province_score_distribution, subject):
     categories = province_score_distribution[subject]['score']
     values = province_score_distribution[subject]['count']
@@ -78,6 +79,41 @@ def create_bar_chart(province_score_distribution, subject):
 
     return fig
 
+def create_summary_table():
+    # Define table header and cell values
+    header_values = ['Thông tin', 'Giá trị']
+    cell_values = [
+        ['Tổng số học sinh', 'Điểm trung bình', 'Trung vị', 'Số thí sinh đạt điểm <=1', 'Số thí sinh đạt điểm dưới trung bình (<5)', 'Mốc điểm trung bình có nhiều học sinh đạt được nhất'],
+        [982728, 6.47, 6.8, 165, '18.95 %', 7.8]
+    ]
+
+    # Create the table
+    fig = go.Figure(data=[go.Table(
+        header=dict(values=header_values,
+                     fill_color='#8080ff',
+                    align='center',
+                    font=dict(size=14),
+                    height=30),
+        cells=dict(values=cell_values,
+                   fill_color='white',
+                   align='center'))
+    ])
+    
+    # Customize layout
+    fig.update_layout(
+        width=440,
+        height=235,
+        margin=dict(
+            l=0,  # Adjust left margin
+            r=0,  # Adjust right margin
+            t=0,  # Adjust top margin
+            b=0   # Adjust bottom margin
+        ),
+        paper_bgcolor="#d0d0e1"
+    )
+
+    return fig
+
 def create_score_distribution_figures_and_summary(pCode):
     score_distribution = find_score_distribution_stat_by_province(pCode)
     subjects = [k for k in score_distribution_stat[0].keys() if k != 'province_code']
@@ -90,14 +126,27 @@ def create_score_distribution_figures_and_summary(pCode):
                     figure=create_bar_chart(score_distribution, subjects[i]),
                     config={'responsive': False},
                     style={
-                        'width': '100%', 
-                        'height': '400px', 
-                        'background-color': '#d0d0e1', 
-                        'border-radius': '30px',
-                        'padding': '0', 
-                        'margin': '0'}
+                'width': '100%', 
+                'height': '60%', 
+                'background-color': '#d0d0e1', 
+                'border-radius': '30px',
+                'padding': '0', 
+                'margin': '0'}
                 ),
-            ], style={'width': '33.33%', 'padding': '10px', 'box-sizing': 'border-box'})
+                dcc.Graph(
+                id=f"{subjects[i]}_summary_table_{pCode}",
+                figure=create_summary_table(),
+                config={'responsive': False},
+                style={
+                    'width': '100%', 
+                    'height': '30%', 
+                    'background-color': '#d0d0e1', 
+                    'border-radius': '30px',
+                    'padding': '0', 
+                    'margin-top': '10px'}
+            ),
+
+            ],  style={'display': 'inline-block', 'width': '31%', 'margin': '1%'})
         )
 
     return charts
