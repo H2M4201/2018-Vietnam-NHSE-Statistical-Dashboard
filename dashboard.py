@@ -9,14 +9,10 @@ from plotting import *
 from layout import dashboard_layout
 from callback import *
 
-attendant_stat = './caching/attendant_stat.csv'
-
 # Initialize the Dash app
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 
 # load caching data
-provinces, attendant_stat,score_distribution_stat = load_caching_information()
-
 # load layout
 app.layout = dashboard_layout()
 
@@ -40,7 +36,7 @@ def update_province_name(n_clicks, selected_province):
         Output('actual_attendants', 'children'),
         Output('participation_percentage', 'children'),
         Output('participation-category', 'figure'),
-        Output('bar-charts-container', 'children')
+        Output('score_distribution_container', 'children')
     ],
     Input('submit-button', 'n_clicks'),
     State('select-province', 'value')

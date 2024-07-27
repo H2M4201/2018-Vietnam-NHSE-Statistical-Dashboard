@@ -148,7 +148,7 @@ def dashboard_layout():
 
     # Score distribution by subject
     html.Div([
-        html.Div(id='bar-charts-container', children= create_score_distribution_figures_and_summary('00'),\
+        html.Div(id='score_distribution_container', children= create_score_distribution_figures_and_summary('00'),\
                  style={'display': 'flex', 'flex-wrap': 'wrap', 'justify-content': 'center'}),
     ], style={}),
 

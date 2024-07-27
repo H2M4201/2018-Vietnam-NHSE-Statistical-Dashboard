@@ -1,5 +1,9 @@
 # ignore csv file
 *.csv
 
+# ignore python caching
 __pycache__/
 .pytest_cache/
+
+# ignore unecessary
+from_db_to_csv.py

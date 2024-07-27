@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 from dash import dcc, html
 from util import *
 
-name_conversion = {
+subject_name_conversion = {
     'toan': 'Toán',
     'van': 'Ngữ Văn',
     'ngoaiNgu': 'Ngoại Ngữ',
@@ -12,6 +12,17 @@ name_conversion = {
     'lichSu': 'Lịch Sử',
     'diaLy': 'Địa Lý',
     'gdcd': 'Giáo dục Công dân'
+}
+
+key_index_name_conversion = {
+    'total': 'Tổng số bài thi',
+    'average': 'Điểm trung bình',
+    'mode': 'Mức điểm có nhiều thí sinh đạt được nhất',
+    'sub_standard_count': 'Số bài thi bị điểm liệt (<= 1)',
+    'under_average_count': 'Số bài thi dưới trung bình',
+    'under_average_percentage': 'Tỷ lệ dưới trung bình (%)',
+    'above_excellent_count': 'Số bài thi từ 9 điểm trở lên',
+    'above_excellent_percentage': 'Tỷ lệ từ 9 điểm trở lên (%)'
 }
 
 
@@ -50,7 +61,7 @@ def create_bar_chart(province_score_distribution, subject):
     # Customize the layout
     fig.update_layout(
         title={
-            'text': 'Phổ điểm môn ' + name_conversion[subject] + ' ',
+            'text': 'Phổ điểm môn ' + subject_name_conversion[subject] + ' ',
             'x': 0.5,
             'xanchor': 'center',
             'yanchor': 'top'
@@ -72,41 +83,44 @@ def create_bar_chart(province_score_distribution, subject):
             b=20   # Adjust bottom margin
         ),
         width=440,  # Adjust width
-        height=400,  # Adjust height
+        height=405,  # Adjust height
         paper_bgcolor="#d0d0e1",  # Match the background color of the gray box
         plot_bgcolor="#f2f2f2",
     )
 
     return fig
 
-def create_summary_table():
+def create_summary_table(province_score_distribution, subject):
     # Define table header and cell values
-    header_values = ['Thông tin', 'Giá trị']
+    header_values = ['Thông số', 'Giá trị']
     cell_values = [
-        ['Tổng số học sinh', 'Điểm trung bình', 'Trung vị', 'Số thí sinh đạt điểm <=1', 'Số thí sinh đạt điểm dưới trung bình (<5)', 'Mốc điểm trung bình có nhiều học sinh đạt được nhất'],
-        [982728, 6.47, 6.8, 165, '18.95 %', 7.8]
+        list(key_index_name_conversion.values()),
+        [province_score_distribution[subject][key] for key in list(key_index_name_conversion.keys())]
+
     ]
 
     # Create the table
     fig = go.Figure(data=[go.Table(
         header=dict(values=header_values,
                      fill_color='#8080ff',
+                     line_color='darkslategray',
                     align='center',
                     font=dict(size=14),
                     height=30),
         cells=dict(values=cell_values,
                    fill_color='white',
+                   line_color='darkslategray',
                    align='center'))
     ])
     
     # Customize layout
     fig.update_layout(
         width=440,
-        height=235,
+        height=270,
         margin=dict(
             l=0,  # Adjust left margin
             r=0,  # Adjust right margin
-            t=0,  # Adjust top margin
+            t=20,  # Adjust top margin
             b=0   # Adjust bottom margin
         ),
         paper_bgcolor="#d0d0e1"
@@ -135,15 +149,14 @@ def create_score_distribution_figures_and_summary(pCode):
                 ),
                 dcc.Graph(
                 id=f"{subjects[i]}_summary_table_{pCode}",
-                figure=create_summary_table(),
+                figure=create_summary_table(score_distribution, subjects[i]),
                 config={'responsive': False},
                 style={
                     'width': '100%', 
                     'height': '30%', 
                     'background-color': '#d0d0e1', 
                     'border-radius': '30px',
-                    'padding': '0', 
-                    'margin-top': '10px'}
+                    'padding': '0'}
             ),
 
             ],  style={'display': 'inline-block', 'width': '31%', 'margin': '1%'})

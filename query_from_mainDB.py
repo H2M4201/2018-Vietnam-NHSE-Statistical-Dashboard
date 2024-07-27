@@ -196,7 +196,6 @@ def get_province_score_distribution_by_subject(pCode, subject):
         GROUP BY {subject}
         ORDER BY {subject}
     """
-    
 
     score_distribution = execute_query(conn, query)
 
@@ -226,13 +225,59 @@ def get_province_score_distribution_by_subject(pCode, subject):
 
     return distribution_by_subject
 
-def get_score_distribution_of_all_provinces_and_saves_to_json():
+def get_subject_score_distribution_summary_stat(score_distribution):
+    score_marks = score_distribution['score']
+    score_mark_count = score_distribution['count']
+    # find total records
+    total_records = sum(score_mark_count)
+
+    # find average score
+    average_score = round(sum([score_marks[i]*score_mark_count[i] for i in  range(len(score_marks))]) / total_records, 2)
+    
+    # find mode score - score achieved by most student
+    mode_index = score_mark_count.index(max(score_mark_count))
+    mode_score = score_marks[mode_index]
+
+    # find number of students that receives a score <=1
+    less_than_or_equal_1_count = sum([score_mark_count[i] for i in range(len(score_marks)) if score_marks[i] <= 1])
+
+    # find number of students that receives a score <=1
+    less_than_5_count = sum([score_mark_count[i] for i in range(len(score_marks)) if score_marks[i] < 5])
+
+    # find percentage of students that receives a score < 5
+    less_than_5_percentage = round(100*sum([score_mark_count[i] for i in range(len(score_marks)) if score_marks[i] < 5]) \
+            / total_records, 2)
+    
+    # find number of students that receives a score <=1
+    greater_or_equal_9_count = sum([score_mark_count[i] for i in range(len(score_marks)) if score_marks[i] >= 9])
+
+    # find number of students that receives a score >= 9
+    greater_or_equal_9_percentage = round(100*sum([score_mark_count[i] for i in range(len(score_marks)) if score_marks[i] >= 9]) \
+            / total_records, 2)
+    # find cut-off points
+
+    return {
+        'total': total_records,
+        'average': average_score,
+        'mode': mode_score,
+        'sub_standard_count': less_than_or_equal_1_count,
+        'under_average_count': less_than_5_count,
+        'under_average_percentage': less_than_5_percentage,
+        'above_excellent_count': greater_or_equal_9_count,
+        'above_excellent_percentage': greater_or_equal_9_percentage
+    }
+
+def get_score_distribution_summary_of_all_provinces_and_saves_to_json():
     score_distribution_by_province = []
     for pCode in province_code:
         province_score_distribution = {"province_code": pCode}
         for subject in ['toan', 'van', 'ngoaiNgu', 'vatLy', 'hoaHoc', 'sinhHoc', 'lichSu', 'diaLy', 'gdcd']:
             subject_score_distribution = get_province_score_distribution_by_subject(pCode, subject)
             province_score_distribution[subject] = subject_score_distribution
+
+            summary = get_subject_score_distribution_summary_stat(subject_score_distribution)
+            for key in summary.keys():
+                province_score_distribution[subject][key] = summary[key]
 
         score_distribution_by_province.append(province_score_distribution)
 
@@ -244,5 +289,22 @@ def get_score_distribution_of_all_provinces_and_saves_to_json():
 
 
 if __name__ == "__main__":
-    get_basic_attendant_stat_and_save_to_json()
+    data = []
 
+    with open(os.environ.get("SCORE_DISTRIBUTION_INFO"), 'r', encoding='utf-8') as json_file:
+        sd = json.load(json_file)
+    json_file.close()
+
+    for s in sd:
+        for subject in ['toan', 'van', 'ngoaiNgu', 'vatLy', 'hoaHoc', 'sinhHoc', 'lichSu', 'diaLy', 'gdcd']:
+            summary = get_subject_score_distribution_summary_stat(s[subject])
+            s[subject]['under_average_count'] = summary['under_average_count']
+            s[subject]['above_excellent_count'] = summary['above_excellent_count']
+            s[subject]['above_excellent_percentage'] = summary['above_excellent_percentage']
+        
+        data.append(s)
+
+    with open(score_distribution_cache, 'w') as json_file:
+        json.dump(data, json_file)
+    json_file.close()
+    
